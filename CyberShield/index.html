@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberShield | DFA + OS Security Integration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Roboto+Mono:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Particle Background -->
+    <div id="particles-js"></div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <i class="fas fa-shield-alt"></i>
+                <h1>CYBERSHIELD</h1>
+            </div>
+            <div class="loading-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="loadingProgress"></div>
+                </div>
+                <p class="loading-text" id="loadingText">Initializing Protection System...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- Main Container -->
+    <div class="container" id="mainContainer" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo animate-in stagger-1">
+                <div class="logo-icon" id="logoIcon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>CYBERSHIELD</h1>
+                    <p class="tagline">DFA + OS Security Integration</p>
+                </div>
+            </div>
+
+            <div class="header-controls">
+                <div class="system-status" id="systemStatus">
+                    <span class="status-dot active"></span>
+                    <span class="status-text">SYSTEM ACTIVE</span>
+                </div>
+                <div class="current-time" id="currentTime">00:00:00</div>
+                <div class="sound-control">
+                    <button class="sound-btn" id="soundBtn">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                    <div class="volume-popup" id="volumePopup">
+                        <h4>Sound Settings</h4>
+                        <div class="volume-slider-container">
+                            <i class="fas fa-volume-down"></i>
+                            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="80">
+                            <span class="volume-value" id="volumeValue">80%</span>
+                        </div>
+                        <div class="mt-10">
+                            <label class="switch">
+                                <input type="checkbox" id="muteSound">
+                                <span class="slider"></span>
+                            </label>
+                            <span style="margin-left: 10px;">Mute All</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-power" id="powerButton">
+                    <i class="fas fa-power-off"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <main class="dashboard">
+            <!-- Left Column -->
+            <div class="column-left">
+                <!-- Attack Visualization -->
+                <div class="card attack-viz animate-in stagger-2">
+                    <div class="card-header">
+                        <h2 id="attackVizTitle"><i class="fas fa-broadcast-tower"></i> Real-Time Attack Visualization
+                        </h2>
+                        <div class="card-controls">
+                            <button class="btn-secondary" id="simulateAttackBtn">
+                                <i class="fas fa-play"></i> Simulate Attack
+                            </button>
+                            <button class="btn-danger" id="clearAttacksBtn">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div id="threeContainer" class="viz-container">
+                            <canvas id="threeCanvas"></canvas>
+                            <div class="viz-stats">
+                                <div class="viz-stat">
+                                    <i class="fas fa-bullseye"></i>
+                                    <span>Active Attacks: <strong id="activeAttacksCount">0</strong></span>
+                                </div>
+                                <div class="viz-stat">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>Defense Walls: <strong>4</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DFA State Machine -->
+                <div class="card dfa-machine animate-in stagger-3">
+                    <div class="card-header">
+                        <h2 id="dfaTitle"><i class="fas fa-project-diagram"></i> DFA State Machine</h2>
+                        <div class="card-controls">
+                            <button class="btn-secondary" id="resetDFABtn">
+                                <i class="fas fa-redo"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="dfa-container">
+                            <canvas id="dfaCanvas"></canvas>
+                        </div>
+                        <div class="dfa-controls">
+                            <div class="dfa-info">
+                                <div class="dfa-info-item">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Current State: <strong id="currentDFAState">Normal</strong></span>
+                                </div>
+                                <div class="dfa-info-item">
+                                    <i class="fas fa-exchange-alt"></i>
+                                    <span>Transitions: <strong id="transitionCount">0</strong></span>
+                                </div>
+                            </div>
+                            <div class="progress-bar" style="width: 200px;">
+                                <div class="progress-fill" id="dfaProgress" style="width: 10%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="column-right">
+                <!-- System Statistics -->
+                <div class="card statistics animate-in stagger-4">
+                    <div class="card-header">
+                        <h2 id="statsTitle"><i class="fas fa-chart-bar"></i> System Statistics</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="stats-grid">
+                            <div class="stat-item" id="blockedAttacksStat">
+                                <div class="stat-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Attacks Blocked</span>
+                                    <span class="stat-value" id="blockedAttacks">0</span>
+                                </div>
+                            </div>
+                            <div class="stat-item" id="responseTimeStat">
+                                <div class="stat-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Avg Response Time</span>
+                                    <span class="stat-value" id="avgResponseTime">12ms</span>
+                                </div>
+                            </div>
+                            <div class="stat-item" id="activeThreatsStat">
+                                <div class="stat-icon">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Active Threats</span>
+                                    <span class="stat-value danger" id="activeThreats">0</span>
+                                </div>
+                            </div>
+                            <div class="stat-item" id="systemLoadStat">
+                                <div class="stat-icon">
+                                    <i class="fas fa-server"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">System Load</span>
+                                    <span class="stat-value" id="systemLoad">25%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stats-chart">
+                            <canvas id="attackChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Alerts -->
+                <div class="card alerts animate-in stagger-5">
+                    <div class="card-header">
+                        <h2 id="alertsTitle"><i class="fas fa-exclamation-triangle"></i> Recent Alerts</h2>
+                        <div class="card-controls">
+                            <button class="btn-secondary" id="clearAlertsBtn">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="alerts-list" id="alertsContainer">
+                            <!-- Alerts will appear here -->
+                            <div class="alert-item success">
+                                <div class="alert-header">
+                                    <span class="alert-title">System Started</span>
+                                    <span class="alert-time">Just now</span>
+                                </div>
+                                <p class="alert-message">Protection system initialized successfully</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Attack Logs -->
+        <div class="card attack-logs">
+            <div class="card-header">
+                <h2 id="logsTitle"><i class="fas fa-history"></i> Attack Logs</h2>
+                <div class="card-controls">
+                    <button class="btn-secondary" id="exportLogsBtn">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <button class="btn-danger" id="clearLogsBtn">
+                        <i class="fas fa-trash"></i> Clear All
+                    </button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="logs-filter">
+                    <input type="text" id="logSearch" placeholder="Search logs..." class="search-input">
+                    <select id="logFilter" class="filter-select">
+                        <option value="all">All Attacks</option>
+                        <option value="bruteforce">Brute Force</option>
+                        <option value="ddos">DDoS</option>
+                        <option value="blocked">Blocked</option>
+                    </select>
+                </div>
+                <div class="logs-table-container">
+                    <table class="logs-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>IP Address</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                                <th>Response Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attackLogsTable">
+                            <!-- Logs will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p><i class="fas fa-copyright"></i> 2024 CyberShield | DFA + OS Security Integration</p>
+                    <p>Version 2.1.4 | Last Updated: <span id="currentDate"></span></p>
+                </div>
+                <div class="footer-stats">
+                    <span><i class="fas fa-shield-alt"></i> Uptime: <strong id="uptime">100%</strong></span>
+                    <span><i class="fas fa-bolt"></i> CPU: <strong id="cpuUsage">15%</strong></span>
+                    <span><i class="fas fa-memory"></i> Memory: <strong id="memoryUsage">42%</strong></span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-panel-header">
+            <h3 class="settings-panel-title">System Settings</h3>
+            <button class="settings-panel-close" id="settingsPanelClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="settings-panel-content">
+            <!-- Login Protection Settings -->
+            <div class="settings-section">
+                <h4><i class="fas fa-user-lock"></i> Login Protection</h4>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>Max Login Attempts</span>
+                        <small>Maximum failed login attempts before lockout</small>
+                    </div>
+                    <div class="settings-control">
+                        <input type="number" id="maxAttempts" value="5" min="1" max="10" class="settings-input">
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">
+
+                        <small>Minutes to lock account after failed attempts</small>
+                    </div>
+                    <div class="settings-control">
+                        <input type="number" id="lockoutTime" value="15" min="1" max="60" class="settings-input">
+                        <span>minutes</span>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>Enable CAPTCHA</span>
+                        <small>Show CAPTCHA after failed attempts</small>
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch">
+                            <input type="checkbox" id="enableCaptcha" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IP Filtering Settings -->
+            <div class="settings-section">
+                <h4><i class="fas fa-filter"></i> IP Filtering</h4>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>Block Suspicious IPs</span>
+                        <small>Automatically block IPs with suspicious activity</small>
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch">
+                            <input type="checkbox" id="autoBlockIPs" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>IP Blacklist</span>
+                        <small>Manage blocked IP addresses</small>
+                    </div>
+                    <div class="settings-control">
+                        <button class="btn-secondary btn-sm" id="manageBlacklistBtn">
+                            <i class="fas fa-list"></i> Manage
+                        </button>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>IP Whitelist</span>
+                        <small>Manage trusted IP addresses</small>
+                    </div>
+                    <div class="settings-control">
+                        <button class="btn-secondary btn-sm" id="manageWhitelistBtn">
+                            <i class="fas fa-check-circle"></i> Manage
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alert Settings -->
+            <div class="settings-section">
+                <h4><i class="fas fa-bell"></i> Alert Settings</h4>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>Email Alerts</span>
+                        <small>Send security alerts via email</small>
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch">
+                            <input type="checkbox" id="emailAlerts" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>SMS Alerts</span>
+                        <small>Send critical alerts via SMS</small>
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch">
+                            <input type="checkbox" id="smsAlerts">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>Sound Alerts</span>
+                        <small>Play sound for security alerts</small>
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch">
+                            <input type="checkbox" id="soundAlerts" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>Alert Volume</span>
+                        <small>Adjust volume for alert sounds</small>
+                    </div>
+                    <div class="settings-control">
+                        <input type="range" id="alertVolume" min="0" max="100" value="80" class="volume-slider">
+                        <span class="volume-value" id="alertVolumeValue">80%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Protection Settings -->
+            <div class="settings-section">
+                <h4><i class="fas fa-robot"></i> AI Protection</h4>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>AI Sensitivity</span>
+                        <small>Higher values increase detection sensitivity</small>
+                    </div>
+                    <div class="settings-control">
+                        <input type="range" id="aiSensitivity" min="1" max="10" value="7" class="range-slider">
+                        <span class="range-value" id="sensitivityValue">7</span>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>Auto-Block Threats</span>
+                        <small>Automatically block detected threats</small>
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch">
+                            <input type="checkbox" id="autoBlock" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>Behavior Analysis</span>
+                        <small>Analyze user behavior for anomalies</small>
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch">
+                            <input type="checkbox" id="behaviorAnalysis" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>Learning Mode</span>
+                        <small>Continuously improve threat detection</small>
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch">
+                            <input type="checkbox" id="learningMode" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Settings -->
+            <div class="settings-section">
+                <h4><i class="fas fa-cog"></i> System Settings</h4>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>Data Retention</span>
+                        <small>Days to keep security logs</small>
+                    </div>
+                    <div class="settings-control">
+                        <input type="number" id="dataRetention" value="30" min="7" max="365" class="settings-input">
+                        <span>days</span>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>System Updates</span>
+                        <small>Automatically check for updates</small>
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch">
+                            <input type="checkbox" id="autoUpdate" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">
+                        <span>Performance Mode</span>
+                        <small>Optimize for performance or security</small>
+                    </div>
+                    <div class="settings-control">
+                        <select id="performanceMode" class="settings-select">
+                            <option value="balanced">Balanced</option>
+                            <option value="performance">Performance</option>
+                            <option value="security">Security</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-actions">
+                <button class="btn-secondary" id="resetSettingsBtn">
+                    <i class="fas fa-undo"></i> Reset to Default
+                </button>
+                <button class="btn-primary" id="saveSettingsBtn">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Button -->
+    <button class="settings-btn" id="settingsBtn">
+        <i class="fas fa-cog"></i>
+    </button>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" data-action="details">
+            <i class="fas fa-info-circle"></i> View Details
+        </div>
+        <div class="context-menu-item" data-action="block">
+            <i class="fas fa-ban"></i> Block IP
+        </div>
+        <div class="context-menu-item" data-action="whitelist">
+            <i class="fas fa-check-circle"></i> Whitelist IP
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" data-action="export">
+            <i class="fas fa-download"></i> Export Log
+        </div>
+        <div class="context-menu-item" data-action="delete">
+            <i class="fas fa-trash"></i> Delete Entry
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <!-- Modal -->
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Attack Details</h3>
+                <button class="modal-close" id="modalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be populated dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="modalCancel">Cancel</button>
+                <button class="btn-primary" id="modalSave">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blacklist Modal -->
+    <div class="modal" id="blacklistModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">IP Blacklist Management</h3>
+                <button class="modal-close" id="blacklistModalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="ip-input-group" style="margin-bottom: 15px;">
+                    <input type="text" id="ipAddress" placeholder="Enter IP address" class="search-input">
+                    <button class="btn-danger" id="blockIPBtn">
+                        <i class="fas fa-ban"></i> Block
+                    </button>
+                </div>
+                <div class="blacklist-container">
+                    <h4>Blacklisted IPs</h4>
+                    <div class="blacklist-list" id="blacklist">
+                        <!-- Blacklisted IPs will appear here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="blacklistModalCancel">Close</button>
+                <button class="btn-primary" id="blacklistModalSave">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Whitelist Modal -->
+    <div class="modal" id="whitelistModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">IP Whitelist Management</h3>
+                <button class="modal-close" id="whitelistModalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="ip-input-group" style="margin-bottom: 15px;">
+                    <input type="text" id="whitelistIP" placeholder="Enter IP address" class="search-input">
+                    <button class="btn-primary" id="addWhitelistBtn">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+                <div class="blacklist-container">
+                    <h4>Whitelisted IPs</h4>
+                    <div class="blacklist-list" id="whitelist">
+                        <!-- Whitelisted IPs will appear here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="whitelistModalCancel">Close</button>
+                <button class="btn-primary" id="whitelistModalSave">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js"></script>
+    <script src="js/script.js"></script>
+</body>
+
+</html>
